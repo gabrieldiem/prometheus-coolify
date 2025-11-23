@@ -2,7 +2,7 @@ networks:
   monitoring:
     name: monitoring
     driver: bridge
-
+    external: true
 volumes:
   prometheus-data:
     driver: local
