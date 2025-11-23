@@ -1,0 +1,33 @@
+volumes:
+  prometheus-data:
+    driver: local
+
+services:
+  prometheus:
+    image: docker.io/prom/prometheus:v3.7.3
+    container_name: prometheus
+
+    command:
+      - --config.file=/etc/prometheus/prometheus.yaml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=20d
+      - --storage.tsdb.retention.size=2GB
+      - --web.enable-lifecycle
+
+    ports:
+      - "9090:9090"
+
+    volumes:
+      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - prometheus-data:/prometheus
+
+    environment:
+      TZ: America/Buenos_Aires
+      
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+    restart: unless-stopped
