@@ -14,6 +14,9 @@ services:
     container_name: prometheus
     environment:
       TZ: America/Buenos_Aires
+      PROM_USER: ${PROM_USER}
+      PROM_PASS: ${PROM_PASS}
+      PROM_PASS_HASH: ${PROM_PASS_HASH}
     volumes:
       - ./start-prometheus.sh:/start-prometheus.sh:ro
       - prometheus-data:/prometheus
