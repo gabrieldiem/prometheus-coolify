@@ -18,7 +18,7 @@ services:
       - "9090:9090"
 
     volumes:
-      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml
       - prometheus-data:/prometheus
 
     environment:
