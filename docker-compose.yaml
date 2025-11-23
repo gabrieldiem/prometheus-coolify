@@ -1,12 +1,19 @@
+networks:
+  monitoring:
+    name: monitoring
+    driver: bridge
+
+volumes:
+  prometheus-data:
+    driver: local
+
+
 services:
   prometheus:
     image: docker.io/prom/prometheus:v3.7.3
     container_name: prometheus
     ports:
       - "9090:9090"
-    volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus-data:/prometheus
     environment:
       TZ: America/Buenos_Aires
       PROM_USER: ${PROM_USER}
@@ -30,6 +37,9 @@ services:
     restart: unless-stopped
     networks:
       - monitoring
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -57,12 +67,3 @@ services:
     restart: unless-stopped
     networks:
       - monitoring
-
-networks:
-  monitoring:
-    name: monitoring
-    driver: bridge
-
-volumes:
-  prometheus-data:
-    driver: local
