@@ -27,6 +27,8 @@ services:
       retries: 3
 
     restart: unless-stopped
+    networks:
+      - monitoring
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
@@ -37,7 +39,9 @@ services:
     restart: unless-stopped
     volumes:
       - '/:/host:ro,rslave'
-      
+    networks:
+      - monitoring
+
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: cadvisor
@@ -50,6 +54,12 @@ services:
     devices:
       - /dev/kmsg
     restart: unless-stopped
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
 
 volumes:
   prometheus-data:
