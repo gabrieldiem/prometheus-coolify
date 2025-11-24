@@ -35,7 +35,7 @@ global:
 
 scrape_configs:
   - job_name: "prometheus"
-    scrape_interval: 5s
+    scrape_interval: 10s
     static_configs:
       - targets: ["localhost:9090"]
     basic_auth:
@@ -58,5 +58,5 @@ exec prometheus \
   --web.config.file="${CONFIG_DIR}/web.yml" \
   --storage.tsdb.path=/prometheus \
   --storage.tsdb.retention.time=20d \
-  --storage.tsdb.retention.size=2GB \
+  --storage.tsdb.retention.size=8GB \
   --web.enable-lifecycle
