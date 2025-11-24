@@ -3,6 +3,7 @@ networks:
     name: monitoring
     driver: bridge
     external: true
+
 volumes:
   prometheus-data:
     driver: local
@@ -45,7 +46,7 @@ services:
       - monitoring
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    image: gcr.io/cadvisor/cadvisor:v0.53.0
     container_name: cadvisor
     privileged: true
     volumes:
@@ -55,8 +56,8 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     networks:
       - monitoring

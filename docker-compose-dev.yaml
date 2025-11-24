@@ -2,6 +2,7 @@ networks:
   monitoring:
     name: monitoring
     driver: bridge
+    external: true
 
 volumes:
   prometheus-data:
@@ -23,7 +24,12 @@ services:
       - prometheus-data:/prometheus
     ports:
       - "9090:9090"
-    entrypoint: ["/bin/sh", "/start-prometheus.sh", "$PROM_USER", "$PROM_PASS", "$PROM_PASS_HASH"]
+    entrypoint:
+      - "/bin/sh"
+      - "/start-prometheus.sh"
+      - "${PROM_USER}"
+      - "${PROM_PASS}"
+      - "${PROM_PASS_HASH}"
     restart: unless-stopped
     networks:
       - monitoring
@@ -41,17 +47,19 @@ services:
       - monitoring
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
     container_name: cadvisor
+    privileged: true
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    devices:
-      - /dev/kmsg
     restart: unless-stopped
+    ports:
+      - "8080:8080"
     networks:
       - monitoring
 

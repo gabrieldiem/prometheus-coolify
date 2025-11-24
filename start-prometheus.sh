@@ -31,7 +31,7 @@ mkdir -p "$CONFIG_DIR"
 # prometheus.yml – defines scrape targets with basic_auth
 cat > "${CONFIG_DIR}/prometheus.yml" <<EOF
 global:
-  scrape_interval: 15s
+  scrape_interval: 10s
 
 scrape_configs:
   - job_name: "prometheus"
