@@ -25,9 +25,9 @@ services:
     entrypoint:
       - "/bin/sh"
       - "/start-prometheus.sh"
-      - $PROM_USER
-      - $PROM_PASS
-      - $PROM_PASS_HASH
+      - "${PROM_USER}"
+      - "${PROM_PASS}"
+      - "${PROM_PASS_HASH}"
     restart: unless-stopped
     networks:
       - monitoring
