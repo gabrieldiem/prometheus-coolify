@@ -2,6 +2,36 @@
 
 A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, and optional Grafana visualization. This project provides both production and development Docker Compose configurations for different deployment scenarios.
 
+## 📋 Table of Contents
+
+- [🚀 Quick Start](#-quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Environment Setup](#environment-setup)
+- [🏗️ Architecture Overview](#-architecture-overview)
+  - [Core Components](#core-components)
+  - [Network Architecture](#network-architecture)
+- [📦 Production Deployment](#-production-deployment)
+  - [Capabilities](#capabilities)
+  - [Services](#services)
+  - [Deployment](#deployment)
+- [🛠️ Development Deployment](#-development-deployment)
+  - [Additional Capabilities](#additional-capabilities)
+  - [Additional Services](#additional-services)
+  - [Deployment](#deployment-1)
+- [🔐 Password Hash Generation](#-password-hash-generation)
+  - [Method 1: Docker (Recommended)](#method-1-docker-recommended)
+  - [Method 2: Python (Local)](#method-2-python-local)
+  - [Method 3: Online Tools](#method-3-online-tools)
+  - [Using the Hash](#using-the-hash)
+- [🔧 Configuration Details](#-configuration-details)
+  - [Prometheus Configuration](#prometheus-configuration)
+  - [Environment Variables](#environment-variables)
+  - [Data Persistence](#data-persistence)
+- [📊 Metrics Overview](#-metrics-overview)
+- [🔄 Maintenance](#-maintenance)
+  - [Data Retention](#data-retention)
+
+---
 ## 🚀 Quick Start
 
 ### Prerequisites
