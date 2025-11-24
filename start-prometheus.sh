@@ -12,20 +12,20 @@ if [ -z "$PROM_USER" ] || [ -z "$PROM_PASS" ] || [ -z "$PROM_PASS_HASH" ]; then
   exit 1
 fi
 
-echo "=================================================="
-echo ">>> Starting Prometheus bootstrap script"
-echo ">>> Received arguments:"
-echo "User:        ${PROM_USER:-<empty>}"
-echo "Password:    [hidden] (len=${#PROM_PASS})"
-echo "Pass hash:   [hidden] (len=${#PROM_PASS_HASH})"
-echo "=================================================="
+# echo "=================================================="
+# echo ">>> Starting Prometheus bootstrap script"
+# echo ">>> Received arguments:"
+# echo "User:        ${PROM_USER:-<empty>}"
+# echo "Password:    [hidden] (len=$PROM_PASS)"
+# echo "Pass hash:   [hidden] (len=$PROM_PASS_HASH)"
+# echo "=================================================="
 
 mkdir -p "$CONFIG_DIR"
 
 # web.yml – controls Prometheus UI login
 {
   echo "basic_auth_users:"
-  printf "  %s: %s\n" "${PROM_USER}" "${PROM_PASS_HASH}"
+  printf "  %s: %s\n" "$PROM_USER" "$PROM_PASS_HASH"
 } > "${CONFIG_DIR}/web.yml"
 
 # prometheus.yml – defines scrape targets with basic_auth
@@ -39,8 +39,8 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
     basic_auth:
-      username: "${PROM_USER}"
-      password: "${PROM_PASS}"
+      username: "$PROM_USER"
+      password: "$PROM_PASS"
 
   - job_name: "node-exporter"
     static_configs:
