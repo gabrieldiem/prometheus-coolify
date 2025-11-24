@@ -57,6 +57,10 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
+    command:
+    - "--enable_metrics=cpu,memory,network"
+    - "--store_container_labels=false"
+    - "--docker_only=true"
     restart: unless-stopped
     ports:
       - "8080:8080"
