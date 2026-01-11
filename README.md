@@ -169,18 +169,21 @@ The system uses bcrypt hashing for secure password authentication. You can gener
 
 ```bash
 # Generate bcrypt hash for your password
-docker run --rm -it python:3-alpine python -c \
-"import bcrypt; print(bcrypt.hashpw(b'your_password'.encode('utf-8')).decode('utf-8'))"
+docker run --rm -it python:3-alpine sh -c "
+  pip install bcrypt && \
+  python -c \"
+import bcrypt
+password = b'your_password'
+salt = bcrypt.gensalt()
+hashed = bcrypt.hashpw(password, salt)
+print('Password:', password.decode())
+print('Hash:', hashed.decode())
+print('Verified:', bcrypt.checkpw(password, hashed))
+\"
+"
 ```
 
-### Method 2: Python (Local)
-
-```bash
-pip install bcrypt
-python3 -c "import bcrypt; print(bcrypt.hashpw(b'your_password'.encode('utf-8')).decode('utf-8'))"
-```
-
-### Method 3: Online Tools
+### Method 2: Online Tools
 
 Use online bcrypt generators (like https://bcrypt-generator.com/) (ensure you're in a secure environment):
 
