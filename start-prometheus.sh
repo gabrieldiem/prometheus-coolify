@@ -12,13 +12,13 @@ if [ -z "$PROM_USER" ] || [ -z "$PROM_PASS" ] || [ -z "$PROM_PASS_HASH" ]; then
   exit 1
 fi
 
-echo "=================================================="
-echo ">>> Starting Prometheus bootstrap script"
-echo ">>> Received arguments:"
-echo "User:        ${PROM_USER:-<empty>}"
-echo "Password:    $PROM_PASS)"
-echo "Pass hash:   $PROM_PASS_HASH)"
-echo "=================================================="
+# echo "=================================================="
+# echo ">>> Starting Prometheus bootstrap script"
+# echo ">>> Received arguments:"
+# echo "User:        ${PROM_USER:-<empty>}"
+# echo "Password:    $PROM_PASS)"
+# echo "Pass hash:   $PROM_PASS_HASH)"
+# echo "=================================================="
 
 mkdir -p "$CONFIG_DIR"
 
