@@ -12,13 +12,13 @@ if [ -z "$PROM_USER" ] || [ -z "$PROM_PASS" ] || [ -z "$PROM_PASS_HASH" ]; then
   exit 1
 fi
 
-# echo "=================================================="
-# echo ">>> Starting Prometheus bootstrap script"
-# echo ">>> Received arguments:"
-# echo "User:        ${PROM_USER:-<empty>}"
-# echo "Password:    [hidden] (len=$PROM_PASS)"
-# echo "Pass hash:   [hidden] (len=$PROM_PASS_HASH)"
-# echo "=================================================="
+echo "=================================================="
+echo ">>> Starting Prometheus bootstrap script"
+echo ">>> Received arguments:"
+echo "User:        ${PROM_USER:-<empty>}"
+echo "Password:    $PROM_PASS)"
+echo "Pass hash:   $PROM_PASS_HASH)"
+echo "=================================================="
 
 mkdir -p "$CONFIG_DIR"
 
@@ -53,7 +53,7 @@ EOF
 
 echo ">>> Configs generated successfully, starting Prometheus..."
 
-exec prometheus \
+exec /bin/prometheus \
   --config.file="${CONFIG_DIR}/prometheus.yml" \
   --web.config.file="${CONFIG_DIR}/web.yml" \
   --storage.tsdb.path=/prometheus \

@@ -11,7 +11,7 @@ volumes:
 
 services:
   prometheus:
-    image: docker.io/prom/prometheus:v3.7.3
+    image: docker.io/prom/prometheus:v3.9.1
     container_name: prometheus
     environment:
       TZ: America/Buenos_Aires
@@ -46,7 +46,7 @@ services:
       - monitoring
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     container_name: cadvisor
     privileged: true
     volumes:
