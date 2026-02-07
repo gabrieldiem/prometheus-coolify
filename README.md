@@ -104,7 +104,7 @@ All services run in the `monitoring` bridge network, enabling secure inter-servi
 
 #### cAdvisor
 
-- **Port:** 8080
+- **Port:** 9110
 - **Purpose:** Monitors Docker containers
 - **Privileged:** Yes (for container stats collection)
 
@@ -154,7 +154,7 @@ docker compose -f docker-compose-dev.yaml up -d
 # Access services
 # Prometheus: http://localhost:9090
 # Grafana: http://localhost:3000 (dev only)
-# cAdvisor: http://localhost:8080
+# cAdvisor: http://localhost:9110
 ```
 
 ---

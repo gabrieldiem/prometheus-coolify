@@ -58,12 +58,13 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
     command:
+    - "--port=9110"
     - "--enable_metrics=cpu,memory,network"
     - "--store_container_labels=false"
     - "--docker_only=true"
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "9110:9110"
     networks:
       - monitoring
 

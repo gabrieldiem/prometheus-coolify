@@ -48,7 +48,7 @@ scrape_configs:
 
   - job_name: "cadvisor"
     static_configs:
-      - targets: ["cadvisor:8080"]
+      - targets: ["cadvisor:9110"]
 EOF
 
 echo ">>> Configs generated successfully, starting Prometheus..."
