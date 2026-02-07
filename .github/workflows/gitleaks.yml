@@ -1,0 +1,30 @@
+# Scans the repository for hardcoded secrets, API keys, and credentials
+# using gitleaks (https://github.com/gitleaks/gitleaks).
+# Runs the CLI directly to avoid the license requirement of gitleaks-action.
+name: gitleaks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  secret-leak-scan:
+    name: secrets scan (gitleaks)
+    runs-on: ubuntu-24.04
+    steps:
+      # Full history is needed so gitleaks can scan every commit for secrets
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Fetch the latest gitleaks release version and install the binary
+      - name: Install gitleaks
+        run: |
+          GITLEAKS_VERSION=$(curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz -C /usr/local/bin gitleaks
+
+      # Scan the full git history for leaked secrets; exits non-zero if any are found
+      - name: Run gitleaks
+        run: gitleaks detect --source . --verbose
