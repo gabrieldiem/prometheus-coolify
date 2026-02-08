@@ -22,7 +22,8 @@ down:
 
 clean: down
 	docker volume rm prometheus-coolify_prometheus-data || true
-	docker volume rm prometheus-coolify_grafana-data
+	docker volume rm prometheus-coolify_grafana-data || true
+	docker volume rm prometheus-coolify_grafana-dashboards || true
 
 %:
 	@:
