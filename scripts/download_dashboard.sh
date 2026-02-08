@@ -29,3 +29,4 @@ echo "Setting permissions..."
 chown 472:472 "$OUTPUT_FILE"
 
 echo "Dashboard $DASHBOARD_ID saved to $OUTPUT_FILE"
+echo ""

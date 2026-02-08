@@ -67,10 +67,32 @@ services:
     container_name: init-dashboards
     volumes:
       - grafana-dashboards:/dashboards
-      - ./scripts:/scripts:ro
-    command: >
-      sh -c "apk add --no-cache curl jq &&
-      /scripts/download_dashboard.sh 1860 /dashboards/node-exporter-full.json 'Node-exporter: Linux Info (1860)'"
+      - ./scripts/download_dashboard.sh:/download_dashboard.sh:ro
+    command: |
+      sh -c '
+        set -e
+        apk add --no-cache curl jq
+
+        /download_dashboard.sh \
+          1860 \
+          /dashboards/node-exporter-linux-info.json \
+          "Node-exporter: Linux Info (1860)"
+
+        /download_dashboard.sh \
+          19908 \
+          /dashboards/cadvisor-general-cpu-absolute.json \
+          "CAdvisor: General [CPU absolute] (19908)"
+
+        /download_dashboard.sh \
+          14282 \
+          /dashboards/cadvisor-general-memory-io-cpu-aggregate.json \
+          "CAdvisor: General [Memory + IO + CPU aggregate]"
+
+        /download_dashboard.sh \
+          19792 \
+          /dashboards/cadvisor-per-container-info.json \
+          "CAdvisor: Per Container Info (19792)"
+      '
     networks:
       - monitoring
 
