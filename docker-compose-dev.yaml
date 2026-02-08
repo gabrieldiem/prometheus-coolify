@@ -86,7 +86,7 @@ services:
         /download_dashboard.sh \
           14282 \
           /dashboards/cadvisor-general-memory-io-cpu-aggregate.json \
-          "CAdvisor: General [Memory + IO + CPU aggregate]"
+          "CAdvisor: General [Memory + IO + CPU aggregate] (14282)"
 
         /download_dashboard.sh \
           19792 \

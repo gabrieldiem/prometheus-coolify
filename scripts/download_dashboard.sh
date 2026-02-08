@@ -16,14 +16,34 @@ curl -s -L "https://grafana.com/api/dashboards/$DASHBOARD_ID/revisions/latest/do
 echo "Configuring datasource..."
 # Replace datasource placeholders
 sed -i 's/\${ds_prometheus}/prometheus/g' "$OUTPUT_FILE"
+sed -i 's/\${DS_PROMETHEUS}/prometheus/g' "$OUTPUT_FILE"
+sed -i 's/\${prometheus}/prometheus/g' "$OUTPUT_FILE"
 sed -i 's/DS_PROMETHEUS/prometheus/g' "$OUTPUT_FILE"
+
+# Defaults
+TIME_FROM=${TIME_FROM:-"now-1h"}
+TIME_TO=${TIME_TO:-"now"}
+REFRESH_RATE=${REFRESH_RATE:-"5s"}
+
+echo "Configuring dashboard defaults (Time: ${TIME_FROM} to ${TIME_TO}, Refresh: ${REFRESH_RATE})..."
+tmp=$(mktemp)
 
 if [ -n "$NEW_TITLE" ]; then
     echo "Renaming dashboard to '$NEW_TITLE'..."
-    # Use a temporary file for jq processing
-    tmp=$(mktemp)
-    jq --arg title "$NEW_TITLE" '.title = $title' "$OUTPUT_FILE" > "$tmp" && mv "$tmp" "$OUTPUT_FILE"
+    jq --arg title "$NEW_TITLE" \
+       --arg from "$TIME_FROM" \
+       --arg to "$TIME_TO" \
+       --arg refresh "$REFRESH_RATE" \
+       '.time = {from: $from, to: $to} | .refresh = $refresh | .title = $title' \
+       "$OUTPUT_FILE" > "$tmp"
+else
+    jq --arg from "$TIME_FROM" \
+       --arg to "$TIME_TO" \
+       --arg refresh "$REFRESH_RATE" \
+       '.time = {from: $from, to: $to} | .refresh = $refresh' \
+       "$OUTPUT_FILE" > "$tmp"
 fi
+mv "$tmp" "$OUTPUT_FILE"
 
 echo "Setting permissions..."
 chown 472:472 "$OUTPUT_FILE"
