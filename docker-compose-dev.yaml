@@ -4,12 +4,6 @@ networks:
     driver: bridge
     external: true
 
-volumes:
-  prometheus-data:
-    driver: local
-  grafana-data:
-    driver: local
-
 services:
   prometheus:
     image: docker.io/prom/prometheus:v3.7.3
@@ -72,8 +66,11 @@ services:
     image: grafana/grafana-oss
     environment:
       - SERVICE_URL_GRAFANA_3000
+      - PROM_USER=${PROM_USER}
+      - PROM_PASS=${PROM_PASS}
     volumes:
       - 'grafana-data:/var/lib/grafana'
+      - './grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro'
     healthcheck:
       test:
         - CMD
@@ -87,3 +84,7 @@ services:
       - "3000:3000"
     networks:
       - monitoring
+
+volumes:
+  prometheus-data:
+  grafana-data:

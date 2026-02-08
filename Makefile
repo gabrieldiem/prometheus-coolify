@@ -1,4 +1,4 @@
-.PHONY: up prod
+.PHONY: up prod pass down clean
 
 up:
 	docker compose -f docker-compose-dev.yaml up --build
@@ -16,6 +16,13 @@ pass:
 			pip install bcrypt > /dev/null 2>&1 && \
 			python3 /generate_pass.py "$(filter-out $@,$(MAKECMDGOALS))" \
 		'
+
+down:
+	docker compose -f docker-compose-dev.yaml down
+
+clean: down
+	docker volume rm prometheus-coolify_prometheus-data || true
+	docker volume rm prometheus-coolify_grafana-data
 
 %:
 	@:

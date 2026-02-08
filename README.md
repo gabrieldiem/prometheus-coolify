@@ -141,7 +141,7 @@ docker compose down
 
 - **Port:** 3000
 - **Features:**
-  - Pre-configured data source connection to Prometheus
+  - Pre-configured data source connection to Prometheus (auto-provisioned)
   - Default admin credentials (change in production)
   - Health monitoring
   - Dashboard management
