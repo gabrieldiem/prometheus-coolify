@@ -19,8 +19,8 @@ A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, a
   - [Additional Services](#additional-services)
   - [Deployment](#deployment-1)
 - [🔐 Password Hash Generation](#-password-hash-generation)
-  - [Method 1: Docker (Recommended)](#method-1-docker-recommended)
-  - [Method 2: Python (Local)](#method-2-python-local)
+  - [Method 1: Make Command (Recommended)](#method-1-make-command-recommended)
+  - [Method 2: Docker (Manual)](#method-2-docker-manual)
   - [Method 3: Online Tools](#method-3-online-tools)
   - [Using the Hash](#using-the-hash)
 - [🔧 Configuration Details](#-configuration-details)
@@ -32,6 +32,7 @@ A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, a
   - [Data Retention](#data-retention)
 
 ---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -165,7 +166,23 @@ docker compose -f docker-compose-dev.yaml up -d
 
 The system uses bcrypt hashing for secure password authentication. You can generate hashes using various methods:
 
-### Method 1: Docker (Recommended)
+### Method 1: Make Command (Recommended)
+
+Run the following command in the project root:
+
+```bash
+make pass <your_password>
+```
+
+Example usage:
+
+```bash
+make pass supersecretpassword123
+```
+
+**Important:** The generated hash must have every dollar sign (`$`) immediately followed by a digit (e.g., `$2b$12$3...`). This command automatically retries generation until a compliant hash is found to satisfy script requirements.
+
+### Method 2: Docker (Manual)
 
 ```bash
 # Generate bcrypt hash for your password
@@ -183,7 +200,7 @@ print('Verified:', bcrypt.checkpw(password, hashed))
 "
 ```
 
-### Method 2: Online Tools
+### Method 3: Online Tools
 
 Use online bcrypt generators (like https://bcrypt-generator.com/) (ensure you're in a secure environment):
 
