@@ -171,13 +171,13 @@ The system uses bcrypt hashing for secure password authentication. You can gener
 Run the following command in the project root:
 
 ```bash
-make pass <your_password>
+make hash <your_password>
 ```
 
 Example usage:
 
 ```bash
-make pass supersecretpassword123
+make hash supersecretpassword123
 ```
 
 **Important:** The generated hash must have every dollar sign (`$`) immediately followed by a digit (e.g., `$2b$12$3...`). This command automatically retries generation until a compliant hash is found to satisfy script requirements.
