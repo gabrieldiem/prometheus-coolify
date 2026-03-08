@@ -28,6 +28,15 @@ services:
     networks:
       - monitoring
 
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: pushgateway
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+    networks:
+      - monitoring
+
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
     container_name: node-exporter
@@ -92,6 +101,12 @@ services:
           19792 \
           /dashboards/cadvisor-per-container-info.json \
           "CAdvisor: Per Container Info (19792)"
+
+        curl -sL "https://raw.githubusercontent.com/seaweedfs/seaweedfs/master/other/metrics/grafana_seaweedfs.json" \
+          -o /dashboards/seaweedfs.json
+        jq ".time = {from: \"now-1h\", to: \"now\"} | .refresh = \"5s\"" /dashboards/seaweedfs.json > /tmp/swfs.json
+        mv /tmp/swfs.json /dashboards/seaweedfs.json
+        chown 472:472 /dashboards/seaweedfs.json
       '
     networks:
       - monitoring

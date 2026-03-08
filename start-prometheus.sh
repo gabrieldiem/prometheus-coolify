@@ -49,6 +49,11 @@ scrape_configs:
   - job_name: "cadvisor"
     static_configs:
       - targets: ["cadvisor:9110"]
+
+  - job_name: "pushgateway"
+    honor_labels: true
+    static_configs:
+      - targets: ["pushgateway:9091"]
 EOF
 
 echo ">>> Configs generated successfully, starting Prometheus..."
