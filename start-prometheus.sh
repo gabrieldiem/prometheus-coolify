@@ -12,6 +12,13 @@ if [ -z "$PROM_USER" ] || [ -z "$PROM_PASS" ] || [ -z "$PROM_PASS_HASH" ]; then
   exit 1
 fi
 
+: "${PUSHGW_USER:?PUSHGW_USER is required}"
+: "${PUSHGW_PASS:?PUSHGW_PASS is required}"
+
+PUSHGW_AUTH_BLOCK="    basic_auth:
+      username: \"$PUSHGW_USER\"
+      password: \"$PUSHGW_PASS\""
+
 # echo "=================================================="
 # echo ">>> Starting Prometheus bootstrap script"
 # echo ">>> Received arguments:"
@@ -54,6 +61,7 @@ scrape_configs:
     honor_labels: true
     static_configs:
       - targets: ["pushgateway:9091"]
+$PUSHGW_AUTH_BLOCK
 EOF
 
 echo ">>> Configs generated successfully, starting Prometheus..."

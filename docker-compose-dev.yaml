@@ -13,6 +13,8 @@ services:
       PROM_USER: ${PROM_USER}
       PROM_PASS: ${PROM_PASS}
       PROM_PASS_HASH: ${PROM_PASS_HASH}
+      PUSHGW_USER: ${PUSHGW_USER}
+      PUSHGW_PASS: ${PUSHGW_PASS}
     volumes:
       - ./start-prometheus.sh:/start-prometheus.sh:ro
       - prometheus-data:/prometheus
@@ -32,8 +34,14 @@ services:
     image: prom/pushgateway:latest
     container_name: pushgateway
     restart: unless-stopped
+    entrypoint: ["/bin/sh", "/start_pushgateway.sh"]
+    environment:
+      PUSHGW_USER: ${PUSHGW_USER}
+      PUSHGW_PASS_HASH: ${PUSHGW_PASS_HASH}
     ports:
       - "9091:9091"
+    volumes:
+      - ./scripts/start_pushgateway.sh:/start_pushgateway.sh:ro
     networks:
       - monitoring
 

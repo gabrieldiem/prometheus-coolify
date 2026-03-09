@@ -23,6 +23,7 @@ A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, a
   - [Method 2: Docker (Manual)](#method-2-docker-manual)
   - [Method 3: Online Tools](#method-3-online-tools)
   - [Using the Hash](#using-the-hash)
+- [📡 Pushgateway](#-pushgateway)
 - [🔧 Configuration Details](#-configuration-details)
   - [Prometheus Configuration](#prometheus-configuration)
   - [Environment Variables](#environment-variables)
@@ -53,9 +54,13 @@ A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, a
    PROM_USER=your_username
    PROM_PASS=your_secure_password
    PROM_PASS_HASH=your_bcrypt_hash
+
+   PUSHGW_USER=your_pushgateway_username
+   PUSHGW_PASS=your_pushgateway_password
+   PUSHGW_PASS_HASH=your_pushgateway_bcrypt_hash
    ```
 
-3. **Generate bcrypt password hash** (see [Password Hash Generation](#-password-hash-generation) below)
+3. **Generate bcrypt password hashes** (see [Password Hash Generation](#-password-hash-generation) below) — required for both `PROM_PASS_HASH` and `PUSHGW_PASS_HASH`
 
 ## 🏗️ Architecture Overview
 
@@ -64,6 +69,7 @@ A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, a
 - **Prometheus** - Time-series database and monitoring server
 - **Node Exporter** - System metrics collector
 - **cAdvisor** - Container metrics collector
+- **Pushgateway** - Metrics push endpoint for ephemeral or batch jobs
 - **Grafana** - Visualization and dashboards (development only)
 
 ### Network Architecture
@@ -81,6 +87,7 @@ All services run in the `monitoring` bridge network, enabling secure inter-servi
 - **Prometheus v3.7.3** with web authentication
 - **Node Exporter** for system metrics (CPU, memory, disk, network)
 - **cAdvisor** for Docker container metrics
+- **Pushgateway** with mandatory basic auth
 - **Data persistence** via named volumes
 - **Secure authentication** using bcrypt password hashing
 - **Restart policies** for high availability
@@ -108,6 +115,12 @@ All services run in the `monitoring` bridge network, enabling secure inter-servi
 - **Port:** 9110
 - **Purpose:** Monitors Docker containers
 - **Privileged:** Yes (for container stats collection)
+
+#### Pushgateway
+
+- **Port:** 9091 (bound to `127.0.0.1` in production)
+- **Purpose:** Accepts metrics pushed by external jobs (e.g. SeaweedFS)
+- **Auth:** Basic auth enforced — credentials required at startup
 
 ### Deployment
 
@@ -219,7 +232,55 @@ $2a$12$voKWceUKhMCZMYGRKZ1tue4BNBzyJKawE5TETfu0Jws5JMv6Xl3RO
    PROM_PASS_HASH=your_generated_bcrypt_hash
    ```
 
-**Security Note:** The `PROM_PASS_HASH` is used for web UI authentication, while `PROM_PASS` is used for service-to-service authentication in the Prometheus configuration.
+**Security Note:** The `PROM_PASS_HASH` / `PUSHGW_PASS_HASH` are used for web UI/API authentication (bcrypt), while `PROM_PASS` / `PUSHGW_PASS` (plaintext) are used for service-to-service scrape authentication in the Prometheus configuration.
+
+---
+
+## 📡 Pushgateway
+
+The Pushgateway allows external services to push metrics into Prometheus. Basic auth is **mandatory** — both the Pushgateway and Prometheus require credentials at startup and will exit immediately if any are missing.
+
+### Required Variables
+
+| Variable           | Used by        | Description                         |
+| ------------------ | -------------- | ----------------------------------- |
+| `PUSHGW_USER`      | Both           | Username for Pushgateway auth       |
+| `PUSHGW_PASS`      | Prometheus     | Plaintext password (scrape auth)    |
+| `PUSHGW_PASS_HASH` | Pushgateway    | Bcrypt hash (web/API auth)          |
+
+### Setup
+
+1. Generate a bcrypt hash for the Pushgateway password:
+
+   ```bash
+   make hash <your_pushgateway_password>
+   ```
+
+2. Set all three variables in `.env`:
+
+   ```env
+   PUSHGW_USER=pushgateway_user
+   PUSHGW_PASS=your_pushgateway_password
+   PUSHGW_PASS_HASH=$2b$12$...
+   ```
+
+3. Restart the stack. Verify auth is enforced:
+
+   ```bash
+   # Should return 401
+   curl http://localhost:9091/metrics
+
+   # Should return 200
+   curl -u pushgateway_user:your_pushgateway_password http://localhost:9091/metrics
+   ```
+
+### Pushing Metrics to Pushgateway
+
+Clients must include credentials in the push URL:
+
+```
+http://<user>:<pass>@<host>:9091
+```
 
 ---
 
@@ -234,12 +295,15 @@ The `start-prometheus.sh` script dynamically generates:
 
 ### Environment Variables
 
-| Variable         | Description                              | Required |
-| ---------------- | ---------------------------------------- | -------- |
-| `PROM_USER`      | Prometheus username                      | Yes      |
-| `PROM_PASS`      | Prometheus password (plaintext)          | Yes      |
-| `PROM_PASS_HASH` | Bcrypt hash of password                  | Yes      |
-| `TZ`             | Timezone (default: America/Buenos_Aires) | Optional |
+| Variable           | Description                              | Required |
+| ------------------ | ---------------------------------------- | -------- |
+| `PROM_USER`        | Prometheus username                      | Yes      |
+| `PROM_PASS`        | Prometheus password (plaintext)          | Yes      |
+| `PROM_PASS_HASH`   | Bcrypt hash of Prometheus password       | Yes      |
+| `PUSHGW_USER`      | Pushgateway username                     | Yes      |
+| `PUSHGW_PASS`      | Pushgateway password (plaintext)         | Yes      |
+| `PUSHGW_PASS_HASH` | Bcrypt hash of Pushgateway password      | Yes      |
+| `TZ`               | Timezone (default: America/Buenos_Aires) | Optional |
 
 ### Data Persistence
 
