@@ -70,7 +70,8 @@ A comprehensive monitoring solution using Prometheus, Node Exporter, cAdvisor, a
 - **Node Exporter** - System metrics collector
 - **cAdvisor** - Container metrics collector
 - **Pushgateway** - Metrics push endpoint for ephemeral or batch jobs
-- **Grafana** - Visualization and dashboards (development only)
+- **Grafana** - Visualization and dashboards *(development only — not included in production)*
+- **init-dashboards** - One-shot container that downloads Grafana dashboards before Grafana starts *(development only)*
 
 ### Network Architecture
 
@@ -84,7 +85,7 @@ All services run in the `monitoring` bridge network, enabling secure inter-servi
 
 ### Capabilities
 
-- **Prometheus v3.7.3** with web authentication
+- **Prometheus v3.9.1** with web authentication
 - **Node Exporter** for system metrics (CPU, memory, disk, network)
 - **cAdvisor** for Docker container metrics
 - **Pushgateway** with mandatory basic auth
@@ -100,7 +101,7 @@ All services run in the `monitoring` bridge network, enabling secure inter-servi
 - **Features:**
   - Web UI with basic authentication
   - 20-day data retention
-  - 2GB storage limit
+  - 8GB storage limit
   - Configurable scrape intervals
   - Lifecycle API enabled
 
@@ -141,12 +142,14 @@ docker compose down
 
 **File: `docker-compose-dev.yaml`**
 
+Extends the production stack with Grafana and automatic dashboard provisioning.
+
 ### Additional Capabilities
 
 - **Grafana OSS** for visualization and dashboards
-- **Enhanced monitoring** with graphical interface
+- **init-dashboards** one-shot service that downloads dashboards before Grafana starts
 - **Health checks** for service reliability
-- **Extended data persistence** with dedicated Grafana volume
+- **Extended data persistence** with dedicated Grafana volumes
 
 ### Additional Services
 
@@ -155,9 +158,15 @@ docker compose down
 - **Port:** 3000
 - **Features:**
   - Pre-configured data source connection to Prometheus (auto-provisioned)
-  - Default admin credentials (change in production)
+  - Dashboards auto-provisioned from the `grafana-dashboards` volume
   - Health monitoring
-  - Dashboard management
+
+#### init-dashboards
+
+- **Image:** `alpine:3.23`
+- **Purpose:** Downloads dashboard JSON files into the `grafana-dashboards` volume before Grafana starts
+- **Sources:** `dashboards.conf` (base dashboards) + `DASHBOARDS` env var (additional dashboards)
+- Runs once and exits; Grafana waits on `service_completed_successfully`
 
 ### Deployment
 
@@ -304,11 +313,15 @@ The `start-prometheus.sh` script dynamically generates:
 | `PUSHGW_PASS`      | Pushgateway password (plaintext)         | Yes      |
 | `PUSHGW_PASS_HASH` | Bcrypt hash of Pushgateway password      | Yes      |
 | `TZ`               | Timezone (default: America/Buenos_Aires) | Optional |
+| `DASHBOARDS`       | JSON array of extra Grafana dashboards to download (dev only, see [Grafana Dashboards](#-grafana-dashboards)) | Optional |
 
 ### Data Persistence
 
-- **Production:** `prometheus-data` volume for Prometheus metrics
-- **Development:** `prometheus-data` + `grafana-data` volumes
+| Volume              | Stack       | Contents                        |
+| ------------------- | ----------- | ------------------------------- |
+| `prometheus-data`   | Both        | Prometheus TSDB (20 days / 8GB) |
+| `grafana-data`      | Dev only    | Grafana state and settings      |
+| `grafana-dashboards`| Dev only    | Downloaded dashboard JSON files |
 
 ---
 
@@ -331,6 +344,80 @@ The `start-prometheus.sh` script dynamically generates:
 - Configuration reloads
 - Query performance
 - Storage usage
+
+---
+
+## 📊 Grafana Dashboards
+
+Dashboard provisioning is a development-only feature. The `init-dashboards` service downloads dashboard JSON files into the `grafana-dashboards` volume before Grafana starts. It processes two sources in order:
+
+1. **`dashboards.conf`** — base dashboards, always downloaded (committed to the repo)
+2. **`DASHBOARDS` env var** — additional dashboards, appended on top (useful for per-deploy extras or Coolify deployments where mounting files is impractical)
+
+### `dashboards.conf` format
+
+```
+# grafana entries — downloaded from grafana.com by ID
+grafana <id> <output_filename> [title]
+
+# url entries — fetched from a raw URL (e.g. GitHub raw content)
+url <raw_url> <output_filename> [title]
+```
+
+Lines starting with `#` and blank lines are ignored. Titles are optional — if omitted, the dashboard's original title is preserved.
+
+### `DASHBOARDS` env var format
+
+A single-line JSON array. Each entry must have `type`, `file`, and either `id` (for `grafana` type) or `url` (for `url` type). `title` is optional.
+
+```env
+DASHBOARDS=[{"type":"grafana","id":"12345","file":"my-dashboard.json","title":"My Dashboard"},{"type":"url","url":"https://example.com/dash.json","file":"dash.json","title":"Example"}]
+```
+
+### Base dashboards (dashboards.conf)
+
+| Dashboard | ID |
+|---|---|
+| Node Exporter: Linux Info | 1860 |
+| cAdvisor: General [CPU absolute] | 19908 |
+| cAdvisor: General [Memory + IO + CPU aggregate] | 14282 |
+| cAdvisor: Per Container Info | 19792 |
+
+### Adding a Grafana.com dashboard
+
+Find the dashboard ID on [grafana.com/grafana/dashboards](https://grafana.com/grafana/dashboards) and add a line to `dashboards.conf`:
+
+```
+grafana 12345 my-dashboard.json "My Dashboard Title"
+```
+
+Or as a `DASHBOARDS` entry:
+
+```env
+DASHBOARDS=[{"type":"grafana","id":"12345","file":"my-dashboard.json","title":"My Dashboard Title"}]
+```
+
+### Adding a URL-based dashboard
+
+Add a `url` entry to `dashboards.conf`:
+
+```
+url https://raw.githubusercontent.com/seaweedfs/seaweedfs/master/other/metrics/grafana_seaweedfs.json seaweedfs.json "SeaweedFS"
+```
+
+Or as a `DASHBOARDS` entry:
+
+```env
+DASHBOARDS=[{"type":"url","url":"https://raw.githubusercontent.com/seaweedfs/seaweedfs/master/other/metrics/grafana_seaweedfs.json","file":"seaweedfs.json","title":"SeaweedFS"}]
+```
+
+### Applying changes
+
+Restart only the `init-dashboards` service to re-download dashboards without restarting the full stack:
+
+```bash
+docker compose -f docker-compose-dev.yaml up init-dashboards --force-recreate
+```
 
 ---
 

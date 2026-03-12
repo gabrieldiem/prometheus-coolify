@@ -82,39 +82,20 @@ services:
   init-dashboards:
     image: alpine:3.23
     container_name: init-dashboards
+    environment:
+      # JSON array of dashboards — takes priority over dashboards.conf when set.
+      # See scripts/init-dashboards.sh for the expected format.
+      DASHBOARDS: ${DASHBOARDS:-}
     volumes:
       - grafana-dashboards:/dashboards
       - ./scripts/download_dashboard.sh:/download_dashboard.sh:ro
+      - ./scripts/init-dashboards.sh:/init-dashboards.sh:ro
+      - ./dashboards.conf:/dashboards.conf:ro
     command: |
       sh -c '
         set -e
         apk add --no-cache curl jq
-
-        /download_dashboard.sh \
-          1860 \
-          /dashboards/node-exporter-linux-info.json \
-          "Node-exporter: Linux Info (1860)"
-
-        /download_dashboard.sh \
-          19908 \
-          /dashboards/cadvisor-general-cpu-absolute.json \
-          "CAdvisor: General [CPU absolute] (19908)"
-
-        /download_dashboard.sh \
-          14282 \
-          /dashboards/cadvisor-general-memory-io-cpu-aggregate.json \
-          "CAdvisor: General [Memory + IO + CPU aggregate] (14282)"
-
-        /download_dashboard.sh \
-          19792 \
-          /dashboards/cadvisor-per-container-info.json \
-          "CAdvisor: Per Container Info (19792)"
-
-        curl -sL "https://raw.githubusercontent.com/seaweedfs/seaweedfs/master/other/metrics/grafana_seaweedfs.json" \
-          -o /dashboards/seaweedfs.json
-        jq ".time = {from: \"now-1h\", to: \"now\"} | .refresh = \"5s\"" /dashboards/seaweedfs.json > /tmp/swfs.json
-        mv /tmp/swfs.json /dashboards/seaweedfs.json
-        chown 472:472 /dashboards/seaweedfs.json
+        sh /init-dashboards.sh /dashboards.conf /dashboards
       '
     networks:
       - monitoring
