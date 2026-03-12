@@ -31,6 +31,12 @@ services:
       - "${PROM_USER}"
       - "${PROM_PASS}"
       - "${PROM_PASS_HASH}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://$PROM_USER:$PROM_PASS@localhost:9090/-/healthy || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: unless-stopped
     networks:
       - monitoring
@@ -42,11 +48,18 @@ services:
     entrypoint: ["/bin/sh", "/start_pushgateway.sh"]
     environment:
       PUSHGW_USER: ${PUSHGW_USER}
+      PUSHGW_PASS: ${PUSHGW_PASS}
       PUSHGW_PASS_HASH: ${PUSHGW_PASS_HASH}
     ports:
       - "9091:9091"
     volumes:
       - ./scripts/start_pushgateway.sh:/start_pushgateway.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://$PUSHGW_USER:$PUSHGW_PASS@localhost:9091/-/healthy || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - monitoring
 
@@ -59,6 +72,12 @@ services:
     restart: unless-stopped
     volumes:
       - '/:/host:ro,rslave'
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9100/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - monitoring
 
@@ -81,5 +100,11 @@ services:
     restart: unless-stopped
     ports:
       - "9110:9110"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9110/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     networks:
       - monitoring
